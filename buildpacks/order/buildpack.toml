@@ -1,0 +1,21 @@
+# Buildpack API version
+api = "0.2"
+
+# Buildpack ID and metadata
+[buildpack]
+id = "hello-order"
+version = "0.0.0"
+name = "Buildpack (order) Template"
+homepage = "https://github.com/mattmoor/hello-dependencies"
+
+[[order]]
+
+[[order.group]]
+id = "hello-dependent"
+version = "0.0.0"
+optional = true
+
+[[order.group]]
+id = "hello-buildpacks"
+version = "0.0.3"  # Tracks image tab in /package.toml
+optional = true

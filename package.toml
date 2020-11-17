@@ -1,0 +1,10 @@
+[buildpack]
+uri = "buildpacks/order"
+
+[[dependencies]]
+image = "ghcr.io/mattmoor/hello-buildpacks:v0.0.3"
+# Alternately:
+# uri = "../hello-buildpacks/buildpacks"
+
+[[dependencies]]
+uri = "buildpacks/dependent"
