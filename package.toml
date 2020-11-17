@@ -2,9 +2,18 @@
 uri = "buildpacks/order"
 
 [[dependencies]]
-image = "ghcr.io/mattmoor/hello-buildpacks:v0.0.3"
-# Alternately:
-# uri = "../hello-buildpacks/buildpacks"
+uri = "buildpacks/dependent"
+
+###################################################################
+#
+# These are all from the 0.2.6 release of paketo-buildpacks/go
+#
+###################################################################
+[[dependencies]]
+image = "gcr.io/paketo-buildpacks/go-dist:0.2.5"
 
 [[dependencies]]
-uri = "buildpacks/dependent"
+image = "gcr.io/paketo-buildpacks/go-mod-vendor:0.0.169"
+
+[[dependencies]]
+image = "gcr.io/paketo-buildpacks/go-build:0.1.1"

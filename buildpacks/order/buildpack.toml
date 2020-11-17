@@ -3,19 +3,42 @@ api = "0.2"
 
 # Buildpack ID and metadata
 [buildpack]
-id = "hello-order"
+id = "io.mattmoor.cloudevents.golang"
 version = "0.0.0"
-name = "Buildpack (order) Template"
-homepage = "https://github.com/mattmoor/hello-dependencies"
+name = "CloudEvents Go Functions"
+homepage = "https://github.com/mattmoor/cloudevents-go-fn"
+
+# These orders are largely based on the equivalent from
+# the Paketo buildpackage at the tag referenced in ./package.toml
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/go-dist"
+    version = "0.2.5"
+
+  [[order.group]]
+    id = "io.mattmoor.cloudevents.golang.functions"
+    version = "0.0.0"
+
+  [[order.group]]
+    id = "paketo-buildpacks/go-mod-vendor"
+    version = "0.0.169"
+
+  [[order.group]]
+    id = "paketo-buildpacks/go-build"
+    version = "0.1.1"
 
 [[order]]
 
-[[order.group]]
-id = "hello-dependent"
-version = "0.0.0"
-optional = true
+  [[order.group]]
+    id = "paketo-buildpacks/go-dist"
+    version = "0.2.5"
 
-[[order.group]]
-id = "hello-buildpacks"
-version = "0.0.3"  # Tracks image tab in /package.toml
-optional = true
+  [[order.group]]
+    id = "io.mattmoor.cloudevents.golang.functions"
+    version = "0.0.0"
+
+  [[order.group]]
+    id = "paketo-buildpacks/go-build"
+    version = "0.1.1"
+
