@@ -13,10 +13,35 @@ pack package-buildpack my-buildpack --config ./package.toml
 # Use this buildpack
 
 ```shell
-# TODO(mattmoor): Use a release.
 pack build blah --buildpack ghcr.io/mattmoor/cloudevents-go-fn:main
 ```
 
-# Sample output
+# Sample function
 
-TODO(mattmoor): add sample output.
+With this buildpack, users can define a trivial Go function that supports one of the supported cloudevent/sdk-go signatures.  For example, the following function:
+
+```go
+package fn
+
+import (
+       cloudevents "github.com/cloudevents/sdk-go/v2"
+)
+
+func Receiver(ce cloudevents.Event) (*cloudevents.Event, error) {
+        r := cloudevents.NewEvent(cloudevents.VersionV1)
+        r.SetType("io.mattmoor.cloudevents-go-fn")
+        r.SetSource("https://github.com/mattmoor/cloudevents-go-fn")
+
+        if err := r.SetData("application/json", struct {
+                A string `json:"a"`
+                B string `json:"b"`
+        }{
+                A: "hello",
+                B: "world",
+        }); err != nil {
+                return nil, cloudevents.NewHTTPResult(500, "failed to set response data: %s", err)
+        }
+
+        return &r, nil
+}
+```

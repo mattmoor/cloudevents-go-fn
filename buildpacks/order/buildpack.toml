@@ -26,7 +26,7 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
 
   [[order.group]]
     id = "paketo-buildpacks/go-build"
-    version = "0.1.1"
+    version = "0.0.0" # 1.1"
 
 [[order]]
 
@@ -40,5 +40,5 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
 
   [[order.group]]
     id = "paketo-buildpacks/go-build"
-    version = "0.1.1"
+    version = "0.0.0" # 1.1"
 

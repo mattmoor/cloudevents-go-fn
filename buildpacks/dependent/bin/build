@@ -9,29 +9,40 @@ platform_dir="$2"
 env_dir="${platform_dir}/env"
 plan_path="$3"
 
-# PLATFORM DIR
-echo "     platform_dir files:"
-ls -alR "${platform_dir}" | sed 's/^/       /'
+# Extract the package name from the plan.
+PACKAGE=$(cat ${plan_path} | \
+	      yj -tj | \
+	      jq -r '.entries | map(select(.name=="ce-go-function")) | .[0].metadata.package')
+FUNCTION=$(cat ${plan_path} | \
+	      yj -tj | \
+	      jq -r '.entries | map(select(.name=="ce-go-function")) | .[0].metadata.function')
 
-# ENV VARS
-echo "     env_dir: ${env_dir}"
-echo "     env vars:"
-env | sed 's/^/       /'
-if compgen -G "${env_dir}/*" > /dev/null; then
-  for var in ${env_dir}/*; do
-    declare "$(basename ${var})=$(<${var})"
-  done
-fi
 
-# LAYERS
-echo "     layers_dir: ${layers_dir}"
+mkdir -p ./ce-cmd/function
+cat > ./ce-cmd/function/main.go <<EOF
+package main
 
-# PLAN
-echo "     plan_path: ${plan_path}"
-echo "     plan contents:"
-cat ${plan_path} | sed 's/^/       /'
-echo
+import (
+	"context"
+	"log"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+        p "${PACKAGE}"
+)
+
+func main() {
+	client, err := cloudevents.NewDefaultClient()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if err := client.StartReceiver(context.Background(), p.${FUNCTION}); err != nil {
+		log.Fatal(err)
+	}
+}
+
+EOF
 
 LAYER="${layers_dir}/${RANDOM}"
 # Designate this layer as a "build layer"
@@ -40,6 +51,6 @@ build = true
 EOF
 # Add an environment variable for subsequent steps.
 mkdir -p "${LAYER}/env.build"
-echo -n foo > "${LAYER}/env.build/BAR.override"
+echo -n ./ce-cmd/function > "${LAYER}/env.build/BP_GO_TARGETS.override"
 
 echo "---> Done"

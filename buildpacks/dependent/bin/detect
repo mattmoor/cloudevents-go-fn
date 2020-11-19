@@ -4,6 +4,18 @@ set -eo pipefail
 # 1. GET ARGS
 plan_path=$2
 
+BASE_PACKAGE="$(grep -E '^module' go.mod | cut -d' ' -f 2)"
+
+# Let the filesystem clean the path for us.
+TMP_DIR="$(mktemp -d)"
+pushd ${TMP_DIR}
+mkdir -p "${BASE_PACKAGE}/${CE_GO_PACKAGE}"
+touch "${BASE_PACKAGE}/${CE_GO_PACKAGE}/file"
+PACKAGE="$(dirname $(find . -type f))"
+# Strip the leading ./
+PACKAGE="${PACKAGE:2}"
+popd
+
 # 2. DECLARE DEPENDENCIES (OPTIONAL)
 cat >> "${plan_path}" <<EOL
 # Buildpack provides this dependency
@@ -11,7 +23,7 @@ cat >> "${plan_path}" <<EOL
 # NOTE: The dependency is provided during the 'build' process.
 #
 [[provides]]
-name = "some-other-thing"
+name = "ce-go-function"
 
 # Buildpack requires this dependency
 #
@@ -19,5 +31,13 @@ name = "some-other-thing"
 #       the dependency.
 #
 [[requires]]
-name = "some-other-thing"
+name = "ce-go-function"
+
+[requires.metadata]
+package = "${PACKAGE}"
+function = "${CE_GO_FUNCTION:-Receiver}"
 EOL
+
+
+
+exit 0

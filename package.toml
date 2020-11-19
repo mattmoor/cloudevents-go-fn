@@ -16,4 +16,7 @@ image = "gcr.io/paketo-buildpacks/go-dist:0.2.5"
 image = "gcr.io/paketo-buildpacks/go-mod-vendor:0.0.169"
 
 [[dependencies]]
-image = "gcr.io/paketo-buildpacks/go-build:0.1.1"
+# TODO(mattmoor): Replace once https://github.com/paketo-buildpacks/go-build/pull/92
+# has merged and released.
+# gcr.io/paketo-buildpacks/go-build:0.1.1"
+image = "ghcr.io/mattmoor/go-build:latest"
