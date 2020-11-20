@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-echo "---> Buildpack (dependent) Template"
+echo "CloudEvents Go Function Buildpack"
 
 # INPUT ARGUMENTS
 layers_dir="$1"
@@ -16,7 +16,13 @@ PACKAGE=$(cat ${plan_path} | \
 FUNCTION=$(cat ${plan_path} | \
 	      yj -tj | \
 	      jq -r '.entries | map(select(.name=="ce-go-function")) | .[0].metadata.function')
+PROTOCOL=$(cat ${plan_path} | \
+	      yj -tj | \
+	      jq -r '.entries | map(select(.name=="ce-go-function")) | .[0].metadata.protocol')
 
+echo "  Package  -> ${PACKAGE}"
+echo "  Function -> ${FUNCTION}"
+echo "  Protocol -> ${PROTOCOL}"
 
 mkdir -p ./ce-cmd/function
 cat > ./ce-cmd/function/main.go <<EOF
@@ -26,13 +32,11 @@ import (
 	"context"
 	"log"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-
         p "${PACKAGE}"
 )
 
 func main() {
-	client, err := cloudevents.NewDefaultClient()
+	client, err := newClient()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -44,6 +48,22 @@ func main() {
 
 EOF
 
+cat > ./ce-cmd/function/http.go <<EOF
+// +build http
+
+package main
+
+import (
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+)
+
+func newClient() (cloudevents.Client, error) {
+	return cloudevents.NewDefaultClient()
+}
+
+EOF
+
+
 LAYER="${layers_dir}/${RANDOM}"
 # Designate this layer as a "build layer"
 cat > "${LAYER}.toml" <<EOF
@@ -52,5 +72,6 @@ EOF
 # Add an environment variable for subsequent steps.
 mkdir -p "${LAYER}/env.build"
 echo -n ./ce-cmd/function > "${LAYER}/env.build/BP_GO_TARGETS.override"
+echo -n -tags=${PROTOCOL} > "${LAYER}/env.build/GOFLAGS.append"
 
-echo "---> Done"
+echo

@@ -36,8 +36,8 @@ name = "ce-go-function"
 [requires.metadata]
 package = "${PACKAGE}"
 function = "${CE_GO_FUNCTION:-Receiver}"
+protocol = "${CE_GO_PROTOCOL:-http}"
 EOL
-
 
 
 exit 0
