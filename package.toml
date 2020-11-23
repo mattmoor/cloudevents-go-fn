@@ -7,6 +7,7 @@ uri = "buildpacks/dependent"
 ###################################################################
 #
 # These are all from the 0.2.6 release of paketo-buildpacks/go
+# Except go-build, which needed a patch not yet released.
 #
 ###################################################################
 [[dependencies]]
@@ -16,7 +17,4 @@ image = "gcr.io/paketo-buildpacks/go-dist:0.2.5"
 image = "gcr.io/paketo-buildpacks/go-mod-vendor:0.0.169"
 
 [[dependencies]]
-# TODO(mattmoor): Replace once https://github.com/paketo-buildpacks/go-build/pull/92
-# has merged and released.
-# gcr.io/paketo-buildpacks/go-build:0.1.1"
-image = "ghcr.io/mattmoor/go-build:latest"
+image = "gcr.io/paketo-buildpacks/go-build:0.1.2"
