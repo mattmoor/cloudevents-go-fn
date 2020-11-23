@@ -19,6 +19,7 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
   [[order.group]]
     id = "io.mattmoor.cloudevents.golang.functions"
     version = "0.0.0"
+    optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/go-mod-vendor"
