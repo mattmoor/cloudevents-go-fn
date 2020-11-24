@@ -22,6 +22,11 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
     optional = true
 
   [[order.group]]
+    id = "io.mattmoor.http.golang.functions"
+    version = "0.0.1"
+    optional = true
+
+  [[order.group]]
     id = "paketo-buildpacks/go-mod-vendor"
     version = "0.0.169"
 
@@ -38,6 +43,12 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
   [[order.group]]
     id = "io.mattmoor.cloudevents.golang.functions"
     version = "0.0.0"
+    optional = true
+
+  [[order.group]]
+    id = "io.mattmoor.http.golang.functions"
+    version = "0.0.1"
+    optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/go-build"

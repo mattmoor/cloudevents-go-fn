@@ -18,3 +18,12 @@ image = "gcr.io/paketo-buildpacks/go-mod-vendor:0.0.169"
 
 [[dependencies]]
 image = "gcr.io/paketo-buildpacks/go-build:0.1.2"
+
+###################################################################
+#
+# This demonstrates how we intend to pull the http and cloudevent
+# buildpacks into the core Paketo order (community willing!).
+#
+###################################################################
+[[dependencies]]
+image = "ghcr.io/mattmoor/http-go-fn:v0.0.1"
