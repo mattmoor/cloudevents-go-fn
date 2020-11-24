@@ -45,3 +45,18 @@ func Receiver(ce cloudevents.Event) (*cloudevents.Event, error) {
         return &r, nil
 }
 ```
+
+# Configuration
+
+You can configure both the package containing the function and the name of
+the function via the following configuration options in `project.toml`:
+
+```toml
+[[build.env]]
+name = "CE_GO_PACKAGE"
+value = "./blah"
+
+[[build.env]]
+name = "CE_GO_FUNCTION"
+value = "MyCustomHandlerName"
+```
