@@ -26,4 +26,4 @@ image = "gcr.io/paketo-buildpacks/go-build:0.1.2"
 #
 ###################################################################
 [[dependencies]]
-image = "ghcr.io/mattmoor/http-go-fn:v0.0.1"
+image = "ghcr.io/mattmoor/http-go-fn:v0.0.2"

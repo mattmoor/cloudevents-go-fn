@@ -23,7 +23,7 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
 
   [[order.group]]
     id = "io.mattmoor.http.golang.functions"
-    version = "0.0.1"
+    version = "0.0.2"
     optional = true
 
   [[order.group]]
@@ -47,7 +47,7 @@ homepage = "https://github.com/mattmoor/cloudevents-go-fn"
 
   [[order.group]]
     id = "io.mattmoor.http.golang.functions"
-    version = "0.0.1"
+    version = "0.0.2"
     optional = true
 
   [[order.group]]
