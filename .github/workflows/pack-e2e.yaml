@@ -98,19 +98,17 @@ jobs:
         # Capture the container ID to stop it below and simulate shutdown.
         ID=$(docker run -d -p 8080:8080 test-container)
 
-        # TODO(mattmoor): readiness probes
-        sleep 10
-        # echo '::group:: startup probe'
-        # while true
-        # do
-        #   PROBE=1
-        #   curl -v -H "User-Agent: kube-probe/im-a-test" http://localhost:8080 || PROBE=0
+        echo '::group:: startup probe'
+        while true
+        do
+          PROBE=1
+          curl -v -H "User-Agent: kube-probe/im-a-test" http://localhost:8080 || PROBE=0
 
-        #   if [[ "$PROBE" == "1" ]]; then
-        #     break
-        #   fi
-        # done
-        # echo '::endgroup::'
+          if [[ "$PROBE" == "1" ]]; then
+            break
+          fi
+        done
+        echo '::endgroup::'
 
         echo '::group:: check request'
         RESULT=$(curl -X POST -H "Content-Type: application/json" \
@@ -139,16 +137,21 @@ jobs:
         fi
         echo '::endgroup::'
 
-        # TODO(mattmoor): Graceful draining
-        # echo '::group:: requests while draining'
-        # # Issue 20 requests spaced a second apart to ensure that things successfully
-        # # serve after probes start failing.
-        # for x in $(seq 1 1 20); do
-        #   RESULT=$(curl -v http://localhost:8080)
-        #   if [[ "Hello ${MAGIC_NUMBER}" != "${RESULT}" ]]; then
-        #     echo "Got: ${RESULT}, wanted: ${MAGIC_NUMBER}"
-        #     exit 1
-        #   fi
-        #   sleep 1
-        # done
-        # echo '::endgroup::'
+        echo '::group:: requests while draining'
+        # Issue 20 requests spaced a second apart to ensure that things successfully
+        # serve after probes start failing.
+        for x in $(seq 1 1 20); do
+          RESULT=$(curl -X POST -H "Content-Type: application/json" \
+                                -H "ce-specversion: 1.0" \
+                                -H "ce-source: curl-command" \
+                                -H "ce-type: curl.demo" \
+                                -H "ce-id: 123-abc" \
+                                -d '{"name":"Earl"}' \
+                    http://localhost:8080/)
+          if [[ "{\"A\":${MAGIC_NUMBER}}" != "${RESULT}" ]]; then
+            echo "Got: ${RESULT}, wanted: ${MAGIC_NUMBER}"
+            exit 1
+          fi
+          sleep 1
+        done
+        echo '::endgroup::'
