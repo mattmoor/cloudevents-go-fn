@@ -77,7 +77,7 @@ func probe(ctx context.Context) http.HandlerFunc {
 			}
 		} else {
 			// If there is no kubelet probe header, then don't accept GET requests.
-			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	}
 }
