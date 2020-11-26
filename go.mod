@@ -1,8 +1,11 @@
 module github.com/mattmoor/cloudevents-go-fn
 
-go 1.13
+go 1.14
 
 require (
-	github.com/vaikas/buildpackstuff v0.0.0-20201123232841-ec3541dcb0a7
-	golang.org/x/tools v0.0.0-20201120155355-20be4ac4bd6e // indirect
+	github.com/google/go-cmp v0.4.1
+	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/paketo-buildpacks/packit v0.4.0
+	github.com/vaikas/gofunctypechecker v0.0.0-20201124220306-6636ad28e8e8
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
 )

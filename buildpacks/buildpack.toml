@@ -1,0 +1,13 @@
+# Buildpack API version
+api = "0.2"
+
+# Buildpack ID and metadata
+[buildpack]
+id = "io.mattmoor.cloudevents.golang.functions"
+version = "0.0.0"
+name = "CloudEvents Go Function"
+homepage = "https://github.com/mattmoor/cloudevents-go-fn"
+
+# Stacks that the buildpack will work with
+[[stacks]]
+id = "io.buildpacks.stacks.bionic"

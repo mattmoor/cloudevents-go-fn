@@ -1,0 +1,154 @@
+name: Pack e2e tests
+
+on:
+  pull_request:
+    branches: [ 'main' ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  e2e-tests:
+    name: e2e tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Keep running if one leg fails.
+
+    env:
+      GO111MODULE: on
+
+    steps:
+    - name: Set up Go 1.15.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15.x
+
+    - name: Install Dependencies
+      run: |
+        echo '::group:: install pack'
+        # From https://buildpacks.io/docs/tools/pack/
+        curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.14.0/pack-v0.14.0-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack
+        echo '::endgroup::'
+
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Build and Test the buildpackage
+      run: |
+        echo '::group:: buildpack build'
+        ./hack/build.sh dev.local/cloudevents-go-fn:latest --config ./package.toml
+        echo '::endgroup::'
+
+        # Set up a magic number to ensure we are getting fresh builds (paranoia)
+        MAGIC_NUMBER="${RANDOM}"
+
+        # Set up the sample from the README
+        pushd $(mktemp -d)
+        cat > go.mod <<EOF
+        module mattmoor.io/cloudevents-go-test
+
+        go 1.14
+        EOF
+        cat > fn.go <<EOF
+        package fn
+
+        import (
+           "time"
+
+           cloudevents "github.com/cloudevents/sdk-go/v2"
+        )
+
+        // Simulate startup delay
+        func init() {
+          time.Sleep(5 * time.Second)
+        }
+
+        func Receiver(ce cloudevents.Event) (*cloudevents.Event, error) {
+                r := cloudevents.NewEvent(cloudevents.VersionV1)
+                r.SetType("io.mattmoor.cloudevents-go-fn")
+                r.SetSource("https://github.com/mattmoor/cloudevents-go-fn")
+
+                if err := r.SetData("application/json", struct {
+                        A int
+                }{
+                        A: ${MAGIC_NUMBER},
+                }); err != nil {
+                        return nil, cloudevents.NewHTTPResult(500, "failed to set response data: %s", err)
+                }
+
+                return &r, nil
+        }
+        EOF
+
+        # Use the Paketo builder
+        pack set-default-builder docker.io/paketobuildpacks/builder:full
+
+        # Build the buildpack
+        echo '::group:: pack build'
+        pack build -v test-container \
+          --pull-policy if-not-present \
+          --buildpack gcr.io/paketo-buildpacks/go-dist:0.2.5 \
+          --buildpack dev.local/cloudevents-go-fn:latest \
+          --buildpack gcr.io/paketo-buildpacks/go-mod-vendor:0.0.169 \
+          --buildpack gcr.io/paketo-buildpacks/go-build:0.1.2
+        echo '::endgroup::'
+
+        # Capture the container ID to stop it below and simulate shutdown.
+        ID=$(docker run -d -p 8080:8080 test-container)
+
+        # TODO(mattmoor): readiness probes
+        sleep 10
+        # echo '::group:: startup probe'
+        # while true
+        # do
+        #   PROBE=1
+        #   curl -v -H "User-Agent: kube-probe/im-a-test" http://localhost:8080 || PROBE=0
+
+        #   if [[ "$PROBE" == "1" ]]; then
+        #     break
+        #   fi
+        # done
+        # echo '::endgroup::'
+
+        echo '::group:: check request'
+        RESULT=$(curl -X POST -H "Content-Type: application/json" \
+                              -H "ce-specversion: 1.0" \
+                              -H "ce-source: curl-command" \
+                              -H "ce-type: curl.demo" \
+                              -H "ce-id: 123-abc" \
+                              -d '{"name":"Earl"}' \
+                    http://localhost:8080/)
+        if [[ "{\"A\":${MAGIC_NUMBER}}" != "${RESULT}" ]]; then
+          echo "Got: ${RESULT}, wanted: ${MAGIC_NUMBER}"
+          exit 1
+        fi
+        echo '::endgroup::'
+
+        # Instruct docker to issue a SIGTERM, and give it 60s before the SIGKILL.
+        echo '::group:: check lame duck'
+        docker stop -t 60 "${ID}" &
+        sleep 1 # Wait a small delay for the above
+
+        # Probes should start to fail immediately.
+        PROBE=0
+        curl -v -H "User-Agent: kube-probe/im-a-test" http://localhost:8080 || PROBE=1
+        if [[ "$PROBE" == "1" ]]; then
+          echo Probe succeeded, wanted failure after SIGTERM.
+        fi
+        echo '::endgroup::'
+
+        # TODO(mattmoor): Graceful draining
+        # echo '::group:: requests while draining'
+        # # Issue 20 requests spaced a second apart to ensure that things successfully
+        # # serve after probes start failing.
+        # for x in $(seq 1 1 20); do
+        #   RESULT=$(curl -v http://localhost:8080)
+        #   if [[ "Hello ${MAGIC_NUMBER}" != "${RESULT}" ]]; then
+        #     echo "Got: ${RESULT}, wanted: ${MAGIC_NUMBER}"
+        #     exit 1
+        #   fi
+        #   sleep 1
+        # done
+        # echo '::endgroup::'
